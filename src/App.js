@@ -4,7 +4,7 @@ import {
   Calendar, Bell, Settings, ChevronRight, Search, Filter, MapPin,
   Thermometer, Droplets, Wind, Sun, TrendingDown, CheckCircle,
   XCircle, Clock, Package, Users, FileText, ArrowUpRight, ArrowDownRight,
-  Activity, Zap, Target
+  Activity, Zap, Target, Sparkles, Bot, MessageSquare, Wand2, Brain, Send
 } from 'lucide-react';
 
 const AgroSense = () => {
@@ -12,6 +12,16 @@ const AgroSense = () => {
   const [selectedRegion, setSelectedRegion] = useState('RS-Norte');
   const [showNotification, setShowNotification] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      type: 'assistant',
+      message: 'Olá! Sou o Assistente IA da VitexBI para o AgroSense. Como posso ajudar você hoje? Posso analisar dados, criar estratégias, prever tendências ou responder qualquer dúvida sobre o agronegócio.',
+      timestamp: new Date()
+    }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   // Simular notificação após 3 segundos
   useEffect(() => {
@@ -67,9 +77,99 @@ const AgroSense = () => {
     { id: 'forecast', name: 'Previsões', icon: <TrendingUp className="w-5 h-5" /> },
     { id: 'climate', name: 'Inteligência Climática', icon: <Cloud className="w-5 h-5" /> },
     { id: 'market', name: 'Análise de Mercado', icon: <DollarSign className="w-5 h-5" /> },
-    { id: 'inventory', name: 'Gestão de Estoque', icon: <Package className="w-5 h-5" /> },
-    { id: 'clients', name: 'CRM Inteligente', icon: <Users className="w-5 h-5" /> }
+    { id: 'ai-assistant', name: 'IA Generativa - Assistente AGRO', icon: <Sparkles className="w-5 h-5" /> }
   ];
+
+  const handleSendMessage = () => {
+    if (newMessage.trim() === '') return;
+
+    // Add user message
+    const userMessage = {
+      id: chatMessages.length + 1,
+      type: 'user',
+      message: newMessage,
+      timestamp: new Date()
+    };
+    setChatMessages([...chatMessages, userMessage]);
+    setNewMessage('');
+    setIsTyping(true);
+
+    // Simulate AI response
+    setTimeout(() => {
+      const aiResponses = {
+        'previsão': `📊 **Análise Preditiva Personalizada**
+
+Com base na análise integrada de dados, posso fornecer as seguintes previsões:
+
+**Próximos 30 dias:**
+• Colheitadeiras: +45% de demanda (alta correlação com preço da soja)
+• Tratores: +32% de demanda esperada
+• Implementos: +18% de crescimento
+
+**Fatores-chave identificados:**
+1. Preço da soja em alta (+4.8%)
+2. R$ 450M em crédito PRONAF disponível
+3. Condições climáticas favoráveis
+
+**Recomendação:** Aumente o estoque de colheitadeiras CR9090 em 40% imediatamente.`,
+        
+        'estratégia': `🎯 **Estratégia Comercial Otimizada**
+
+Analisei 15 variáveis de mercado e identifico 3 ações prioritárias:
+
+**1. Campanha Relâmpago (Próximas 48h)**
+• Foco: 850 produtores com área > 500 hectares
+• Canal: WhatsApp Business + Visitas
+• Mensagem: "Financiamento PRONAF 5.5% a.a. - Últimas unidades"
+
+**2. Contra-ataque John Deere**
+• Oferta: Trade-in com avaliação 20% acima da tabela
+• Diferencial: Entrega imediata + Manutenção grátis 1 ano
+
+**3. Parceria Estratégica**
+• Cooperativas locais: Palestras sobre Euro 5
+• ROI esperado: 285% em 60 dias
+
+Deseja que eu detalhe alguma estratégia específica?`,
+        
+        'default': `💡 **Análise Inteligente Gerada**
+
+Processsei sua solicitação e aqui está minha análise:
+
+**Insights Principais:**
+• O mercado está em momento favorável para expansão
+• A combinação de fatores externos cria janela única de oportunidade
+• Ação rápida é essencial para capturar o momento
+
+**Dados Relevantes:**
+- 2.500 produtores elegíveis para crédito na região
+- Concorrência com estoque limitado
+- Previsão climática favorável próximos 15 dias
+
+**Próximos Passos:**
+1. Mobilizar equipe de vendas imediatamente
+2. Preparar material sobre financiamento PRONAF
+3. Agendar visitas aos top 100 clientes
+
+Posso ajudar com análises mais específicas ou criar um plano de ação detalhado!`
+      };
+
+      const response = newMessage.toLowerCase().includes('previsão') || newMessage.toLowerCase().includes('previsao') 
+        ? aiResponses['previsão']
+        : newMessage.toLowerCase().includes('estratégia') || newMessage.toLowerCase().includes('estrategia')
+        ? aiResponses['estratégia']
+        : aiResponses['default'];
+
+      const aiMessage = {
+        id: chatMessages.length + 2,
+        type: 'assistant',
+        message: response,
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, aiMessage]);
+      setIsTyping(false);
+    }, 2000);
+  };
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -128,7 +228,7 @@ const AgroSense = () => {
 
       {/* Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Forecast Chart */}
+        {/* Forecast Chart - CORRIGIDO */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold">Previsão de Vendas por Categoria</h3>
@@ -136,20 +236,18 @@ const AgroSense = () => {
               Ver detalhes →
             </button>
           </div>
-          <div className="h-64 flex items-end justify-between space-x-2">
+          <div className="h-64 flex items-end justify-between gap-2 px-2">
             {salesForecast.map((data, index) => (
               <div key={index} className="flex-1 flex flex-col items-center">
-                <div className="w-full space-y-1">
-                  <div className="relative">
-                    <div
-                      className="bg-blue-200 rounded-t mx-auto"
-                      style={{ height: `${data.vendas * 2}px`, width: '60%' }}
-                    />
-                    <div
-                      className="bg-blue-500 rounded-t mx-auto mt-1"
-                      style={{ height: `${data.forecast * 2}px`, width: '60%' }}
-                    />
-                  </div>
+                <div className="w-full flex flex-col items-center gap-1">
+                  <div
+                    className="w-3/4 bg-blue-200 rounded-t"
+                    style={{ height: `${data.vendas * 2}px` }}
+                  />
+                  <div
+                    className="w-3/4 bg-blue-500 rounded-t"
+                    style={{ height: `${data.forecast * 2}px` }}
+                  />
                 </div>
                 <span className="text-xs text-gray-600 mt-2">{data.month}</span>
               </div>
@@ -173,10 +271,10 @@ const AgroSense = () => {
             <h3 className="text-lg font-semibold">Alertas Inteligentes</h3>
             <Bell className="w-5 h-5 text-gray-400" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-80 overflow-y-auto">
             {alerts.map((alert) => (
               <div key={alert.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className={`mt-1 ${
+                <div className={`mt-1 flex-shrink-0 ${
                   alert.type === 'success' ? 'text-green-500' :
                   alert.type === 'warning' ? 'text-orange-500' : 'text-blue-500'
                 }`}>
@@ -184,7 +282,7 @@ const AgroSense = () => {
                    alert.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> :
                    <Bell className="w-5 h-5" />}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm">{alert.title}</h4>
                   <p className="text-sm text-gray-600 mt-1">{alert.message}</p>
                   <div className="flex items-center justify-between mt-2">
@@ -229,7 +327,7 @@ const AgroSense = () => {
                   <Wind className="w-4 h-4 mr-1 text-gray-500" />
                   <span>{data.wind} km/h</span>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center col-span-2">
                   <Sun className="w-4 h-4 mr-1 text-yellow-500" />
                   <span className="text-xs">{data.condition}</span>
                 </div>
@@ -277,21 +375,21 @@ const AgroSense = () => {
             <h4 className="font-semibold text-green-900 mb-4">Oportunidades Identificadas</h4>
             <div className="space-y-3">
               <div className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Região de Passo Fundo</p>
                   <p className="text-xs text-gray-600">Alta probabilidade de vendas em Abril</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Crédito PRONAF liberado</p>
                   <p className="text-xs text-gray-600">R$ 2.5M disponível para pequenos produtores</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5" />
+                <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Safra de soja promissora</p>
                   <p className="text-xs text-gray-600">Aumento de 20% na área plantada</p>
@@ -429,7 +527,7 @@ const AgroSense = () => {
         {/* Climate-based Recommendations */}
         <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-start">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
             <div>
               <h5 className="font-semibold text-yellow-800">Recomendações Baseadas no Clima</h5>
               <ul className="mt-2 space-y-1 text-sm text-yellow-700">
@@ -544,33 +642,33 @@ const AgroSense = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
               <div className="flex items-center">
-                <AlertTriangle className="w-5 h-5 text-orange-600 mr-3" />
-                <div>
+                <AlertTriangle className="w-5 h-5 text-orange-600 mr-3 flex-shrink-0" />
+                <div className="min-w-0">
                   <p className="font-medium text-sm">John Deere</p>
                   <p className="text-xs text-gray-600">Lançou campanha 0% de entrada</p>
                 </div>
               </div>
-              <span className="text-xs text-gray-500">Há 2 dias</span>
+              <span className="text-xs text-gray-500 flex-shrink-0">Há 2 dias</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <Activity className="w-5 h-5 text-gray-600 mr-3" />
-                <div>
+                <Activity className="w-5 h-5 text-gray-600 mr-3 flex-shrink-0" />
+                <div className="min-w-0">
                   <p className="font-medium text-sm">Case IH</p>
                   <p className="text-xs text-gray-600">Feirão com descontos de até 15%</p>
                 </div>
               </div>
-              <span className="text-xs text-gray-500">Há 5 dias</span>
+              <span className="text-xs text-gray-500 flex-shrink-0">Há 5 dias</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center">
-                <Package className="w-5 h-5 text-gray-600 mr-3" />
-                <div>
+                <Package className="w-5 h-5 text-gray-600 mr-3 flex-shrink-0" />
+                <div className="min-w-0">
                   <p className="font-medium text-sm">New Holland</p>
                   <p className="text-xs text-gray-600">Estoque limitado de colheitadeiras</p>
                 </div>
               </div>
-              <span className="text-xs text-gray-500">Há 1 semana</span>
+              <span className="text-xs text-gray-500 flex-shrink-0">Há 1 semana</span>
             </div>
           </div>
           <button className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
@@ -584,7 +682,7 @@ const AgroSense = () => {
           <div className="space-y-3">
             <div className="p-3 bg-green-50 rounded-lg">
               <div className="flex items-start">
-                <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-sm">Plano Safra 2024/25 aprovado</p>
                   <p className="text-xs text-gray-600 mt-1">
@@ -595,7 +693,7 @@ const AgroSense = () => {
             </div>
             <div className="p-3 bg-blue-50 rounded-lg">
               <div className="flex items-start">
-                <FileText className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
+                <FileText className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-sm">Nova regulamentação de emissões</p>
                   <p className="text-xs text-gray-600 mt-1">
@@ -606,7 +704,7 @@ const AgroSense = () => {
             </div>
             <div className="p-3 bg-yellow-50 rounded-lg">
               <div className="flex items-start">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-sm">Discussão sobre ICMS</p>
                   <p className="text-xs text-gray-600 mt-1">
@@ -708,7 +806,7 @@ const AgroSense = () => {
         <h3 className="text-xl font-bold mb-4">Recomendações de Ação Imediata</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start">
-            <div className="bg-white/20 p-2 rounded-lg mr-3">
+            <div className="bg-white/20 p-2 rounded-lg mr-3 flex-shrink-0">
               <Zap className="w-5 h-5" />
             </div>
             <div>
@@ -719,7 +817,7 @@ const AgroSense = () => {
             </div>
           </div>
           <div className="flex items-start">
-            <div className="bg-white/20 p-2 rounded-lg mr-3">
+            <div className="bg-white/20 p-2 rounded-lg mr-3 flex-shrink-0">
               <Target className="w-5 h-5" />
             </div>
             <div>
@@ -730,7 +828,7 @@ const AgroSense = () => {
             </div>
           </div>
           <div className="flex items-start">
-            <div className="bg-white/20 p-2 rounded-lg mr-3">
+            <div className="bg-white/20 p-2 rounded-lg mr-3 flex-shrink-0">
               <Package className="w-5 h-5" />
             </div>
             <div>
@@ -741,7 +839,7 @@ const AgroSense = () => {
             </div>
           </div>
           <div className="flex items-start">
-            <div className="bg-white/20 p-2 rounded-lg mr-3">
+            <div className="bg-white/20 p-2 rounded-lg mr-3 flex-shrink-0">
               <Users className="w-5 h-5" />
             </div>
             <div>
@@ -750,6 +848,128 @@ const AgroSense = () => {
                 Treinar equipe sobre novas regulamentações Euro 5 para consultoria técnica.
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAIAssistant = () => (
+    <div className="h-full">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-full flex flex-col" style={{ minHeight: 'calc(100vh - 250px)' }}>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 rounded-t-xl text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="bg-white/20 p-3 rounded-lg">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Assistente IA Generativa AGRO</h2>
+                <p className="opacity-90">Powered by VitexBI - Análise inteligente em tempo real</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-full">
+              <Brain className="w-5 h-5" />
+              <span className="text-sm font-medium">IA Ativa</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {chatMessages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-3xl ${msg.type === 'user' ? 'order-2' : 'order-1'}`}>
+                <div className="flex items-start space-x-3">
+                  {msg.type === 'assistant' && (
+                    <div className="bg-purple-100 p-2 rounded-full flex-shrink-0">
+                      <Bot className="w-5 h-5 text-purple-600" />
+                    </div>
+                  )}
+                  <div className={`rounded-lg p-4 ${
+                    msg.type === 'user' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-purple-50 text-gray-800'
+                  }`}>
+                    <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                    <p className={`text-xs mt-2 ${
+                      msg.type === 'user' ? 'text-blue-200' : 'text-gray-500'
+                    }`}>
+                      {msg.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {msg.type === 'user' && (
+                    <div className="bg-gray-100 p-2 rounded-full flex-shrink-0">
+                      <Users className="w-5 h-5 text-gray-600" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="flex items-start space-x-3">
+                <div className="bg-purple-100 p-2 rounded-full">
+                  <Bot className="w-5 h-5 text-purple-600" />
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t p-4">
+          <div className="flex items-center space-x-3">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Digite sua pergunta... Ex: 'Crie uma estratégia para abril' ou 'Faça uma previsão de vendas'"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <button 
+              onClick={handleSendMessage}
+              className="bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button 
+              onClick={() => setNewMessage('Faça uma previsão de vendas para os próximos 30 dias')}
+              className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200"
+            >
+              📊 Previsão de vendas
+            </button>
+            <button 
+              onClick={() => setNewMessage('Crie uma estratégia para combater a concorrência')}
+              className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200"
+            >
+              🎯 Estratégia competitiva
+            </button>
+            <button 
+              onClick={() => setNewMessage('Analise o impacto do clima nas vendas')}
+              className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200"
+            >
+              ☁️ Análise climática
+            </button>
+            <button 
+              onClick={() => setNewMessage('Identifique oportunidades com base no crédito rural')}
+              className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200"
+            >
+              💰 Oportunidades de crédito
+            </button>
           </div>
         </div>
       </div>
@@ -766,6 +986,8 @@ const AgroSense = () => {
         return renderClimate();
       case 'market':
         return renderMarket();
+      case 'ai-assistant':
+        return renderAIAssistant();
       default:
         return renderDashboard();
     }
@@ -837,7 +1059,9 @@ const AgroSense = () => {
                 onClick={() => setActiveModule(module.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   activeModule === module.id
-                    ? 'bg-green-50 text-green-700'
+                    ? module.id === 'ai-assistant' 
+                      ? 'bg-purple-50 text-purple-700'
+                      : 'bg-green-50 text-green-700'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -853,6 +1077,25 @@ const AgroSense = () => {
               <h4 className="font-semibold mb-2">Precisão do Sistema</h4>
               <div className="text-3xl font-bold mb-1">94.8%</div>
               <p className="text-sm opacity-90">Acurácia nas previsões</p>
+            </div>
+          </div>
+
+          {/* VitexBI Logo */}
+          <div className="p-4 mt-auto">
+            <div className="border-t border-gray-200 pt-4">
+              <p className="text-xs text-gray-500 mb-2">Powered by</p>
+              <div className="flex items-center justify-center">
+                <div className="flex items-center">
+                  <svg width="40" height="40" viewBox="0 0 100 100" className="text-blue-600">
+                    <path d="M20 60 L40 40 L60 50 L80 30" stroke="currentColor" strokeWidth="4" fill="none"/>
+                    <path d="M20 70 L40 50 L60 60 L80 40" stroke="currentColor" strokeWidth="4" fill="none"/>
+                  </svg>
+                  <div className="ml-2">
+                    <div className="text-sm font-bold text-gray-900">VitexBI</div>
+                    <div className="text-xs text-gray-500">Business Intelligence</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </aside>
@@ -876,6 +1119,10 @@ const AgroSense = () => {
       {/* Demo Notification */}
       {showNotification && (
         <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 border border-gray-200 max-w-sm animate-slideIn">
+          <div className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <Sparkles className="w-3 h-3 mr-1" />
+            IA Generativa
+          </div>
           <div className="flex items-start">
             <div className="bg-green-100 p-2 rounded-full mr-3">
               <CheckCircle className="w-5 h-5 text-green-600" />
@@ -884,6 +1131,9 @@ const AgroSense = () => {
               <h4 className="font-semibold text-sm">Nova oportunidade detectada!</h4>
               <p className="text-sm text-gray-600 mt-1">
                 Cliente Fazenda Santa Maria interessado em colheitadeira. Probabilidade de conversão: 87%
+              </p>
+              <p className="text-xs text-purple-600 mt-2 italic">
+                "IA analisou: histórico + safra + crédito + 320 clientes similares"
               </p>
               <button className="text-sm text-green-600 font-medium mt-2 hover:text-green-700">
                 Ver detalhes →
